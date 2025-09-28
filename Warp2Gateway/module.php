@@ -45,10 +45,19 @@ class Warp2Gateway extends IPSModule
             $enabled = $this->ReadPropertyBoolean('enabled');
             $updateInterval = $enabled ? $this->ReadPropertyInteger('updateInterval') : 0;
             $this->SetTimerInterval('Update', $updateInterval * 1000);
+            // remove legacy action variables no longer exposed
+            $this->cleanupLegacyVariables();
             $this->SetStatus(102);
         } catch (Exception $e) {
             $this->SetStatus(104);
             $this->LogMessage("Error initializing Warp2 Gateway: " . $e->getMessage(), KL_ERROR);
+        }
+    }
+
+    private function cleanupLegacyVariables(): void
+    {
+        foreach (['update_now','reboot'] as $ident) {
+            try { if (@$this->GetIDForIdent($ident)) { @$this->UnregisterVariable($ident); } } catch (Throwable $t) { /* ignore */ }
         }
     }
 
@@ -83,7 +92,9 @@ class Warp2Gateway extends IPSModule
     }
 
     public function RequestAction($ident, $value) {
-        $this->SetValue($ident, $value);
+        if (@$this->GetIDForIdent($ident)) {
+            $this->SetValue($ident, $value);
+        }
         try {
             switch ($ident) {
                 case 'target_current':
@@ -92,11 +103,9 @@ class Warp2Gateway extends IPSModule
                     break;
                 case 'update_now':
                     $this->Update();
-                    $this->SetValue('update_now', false);
                     break;
                 case 'reboot':
                     $this->api->apiRequest($this->getConfig(), 'force_reboot', 'PUT', []);
-                    $this->SetValue('reboot', false);
                     break;
                 default:
                     throw new Exception('Unsupported action: ' . $ident);

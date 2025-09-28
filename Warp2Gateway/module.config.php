@@ -10,8 +10,6 @@ return [
     ],
     'variables' => [
         'target_current' => [ 'type' => 'Integer', 'name' => 'Target Current', 'profile' => 'WARP2.ChargerCurrent', 'position' => '5', 'enableAction' => true ],
-        'update_now' => [ 'type' => 'Boolean', 'name' => 'Update now', 'profile' => '~Switch', 'position' => '6', 'enableAction' => true ],
-        'reboot' => [ 'type' => 'Boolean', 'name' => 'Reboot charger', 'profile' => '~Switch', 'position' => '7', 'enableAction' => true ],
         'charger_state' => [ 'type' => 'Integer', 'name' => 'Charger Status', 'profile' => 'WARP2.ChargerState', 'position' => '10', 'enableAction' => false ],
         'iec61851_state' => [ 'type' => 'Integer', 'name' => 'Iec61851 State', 'profile' => 'WARP2.Iec61851State', 'position' => '100', 'enableAction' => false ],
         'contactor_state' => [ 'type' => 'Integer', 'name' => 'Contactor State', 'profile' => 'WARP2.ContactorState', 'position' => '102', 'enableAction' => false ],
