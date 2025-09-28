@@ -1,0 +1,16 @@
+{
+    "id": "{A3B1C2D3-4E5F-6789-ABCD-112233445566}",
+    "name": "Warp2Gateway",
+    "type": 1,
+    "vendor": "Tinkerforge",
+    "aliases": [],
+    "parentRequirements": [],
+    "childRequirements": [
+        "{7F469A41-F10B-48C9-47A7-9940F32C5C45}"
+    ],
+    "implemented": [
+        "{9A752489-9D57-4990-585A-626292E75065}"
+    ],
+    "prefix": "WARP2",
+    "url": ""
+}

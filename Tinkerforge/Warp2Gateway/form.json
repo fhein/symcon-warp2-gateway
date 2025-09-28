@@ -1,0 +1,14 @@
+{
+  "elements": [
+    { "type": "CheckBox", "name": "enabled", "caption": "Gateway enabled", "required": true },
+    { "type": "ValidationTextBox", "name": "host", "caption": "Warp2 Host", "required": true },
+    { "type": "ValidationTextBox", "name": "user", "caption": "User", "required": false },
+    { "type": "PasswordTextBox", "name": "password", "caption": "Password", "required": false },
+    { "type": "NumberSpinner", "name": "updateInterval", "caption": "Update Interval (seconds)", "required": true }
+  ],
+  "actions": [],
+  "status": [
+    { "code": 102, "icon": "active", "caption": "Warp2 Gateway connected" },
+    { "code": 104, "icon": "inactive", "caption": "Warp2 Gateway disconnected" }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "id": "{8E0B7F80-7E7C-4C3D-9C4B-AB12CD34EF56}",
+  "name": "Tinkerforge",
+  "author": "fhein",
+  "url": "https://github.com/fhein/symcon-warp2-gateway",
+  "compatibility": { "version": "5.5" },
+  "version": "1.0",
+  "build": 0,
+  "date": 0
+}
