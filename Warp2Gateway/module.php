@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-require_once __DIR__ . '/libs/ModuleRegistration.php';
+require_once __DIR__ . '/../libs/ModuleRegistration.php';
 require_once __DIR__ . '/Warp2API.php';
 
 class Warp2Gateway extends IPSModule
@@ -18,7 +18,7 @@ class Warp2Gateway extends IPSModule
     {
         parent::Create();
         try {
-            $mr = new ModuleRegistration($this);
+            $mr = new WARP2ModuleRegistration($this);
             $config = include __DIR__ . '/module.config.php';
             $mr->Register($config);
             $this->RegisterTimer('Update', 0, 'WARP2_Update($_IPS[\'TARGET\']);');
@@ -32,7 +32,7 @@ class Warp2Gateway extends IPSModule
         $this->SetTimerInterval('Update', 0);
         $config = include __DIR__ . '/module.config.php';
         if (isset($config['profiles'])) {
-            $mr = new ModuleRegistration($this);
+            $mr = new WARP2ModuleRegistration($this);
             $mr->DeleteProfiles($config['profiles']);
         }
     }
@@ -79,6 +79,30 @@ class Warp2Gateway extends IPSModule
         } catch (Exception $e) {
             $this->LogMessage("Warp2 API Error: " . $e->getMessage(), KL_ERROR);
             return '{}';
+        }
+    }
+
+    public function RequestAction($ident, $value) {
+        $this->SetValue($ident, $value);
+        try {
+            switch ($ident) {
+                case 'target_current':
+                    $payload = [ 'current' => (int)$value ];
+                    $this->api->apiRequest($this->getConfig(), 'evse/global_current', 'PUT', $payload);
+                    break;
+                case 'update_now':
+                    $this->Update();
+                    $this->SetValue('update_now', false);
+                    break;
+                case 'reboot':
+                    $this->api->apiRequest($this->getConfig(), 'force_reboot', 'PUT', []);
+                    $this->SetValue('reboot', false);
+                    break;
+                default:
+                    throw new Exception('Unsupported action: ' . $ident);
+            }
+        } catch (Exception $e) {
+            $this->LogMessage('Action failed: ' . $e->getMessage(), KL_ERROR);
         }
     }
 

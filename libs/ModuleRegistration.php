@@ -1,6 +1,6 @@
 <?php
 
-class ModuleRegistration {
+class WARP2ModuleRegistration {
 
     protected $allowedPrefixes = [
         'Property' => ['type', 'default'],
