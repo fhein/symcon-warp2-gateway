@@ -91,6 +91,16 @@ class Warp2Gateway extends IPSModule
         }
     }
 
+    public function GetMeterState(): ?array
+    {
+        return $this->fetchMeterEndpoint('meter/state');
+    }
+
+    public function GetMeterValues(): ?array
+    {
+        return $this->fetchMeterEndpoint('meter/values');
+    }
+
     public function RequestAction($ident, $value) {
         if (@$this->GetIDForIdent($ident)) {
             $this->SetValue($ident, $value);
@@ -122,5 +132,17 @@ class Warp2Gateway extends IPSModule
             'user'     => $this->ReadPropertyString('user'),
             'password' => $this->ReadPropertyString('password'),
         ];
+    }
+
+    private function fetchMeterEndpoint(string $endpoint): ?array
+    {
+        try {
+            $response = $this->api->apiRequest($this->getConfig(), $endpoint);
+            $decoded = json_decode($response, true);
+            return is_array($decoded) ? $decoded : null;
+        } catch (Exception $e) {
+            $this->SendDebug('Warp2Gateway', sprintf('Meter endpoint %s failed: %s', $endpoint, $e->getMessage()), 0);
+            return null;
+        }
     }
 }
