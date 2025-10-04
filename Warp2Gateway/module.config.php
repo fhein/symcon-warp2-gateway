@@ -9,7 +9,12 @@ return [
         'enabled' => [ 'type' => 'Boolean', 'default' => 'true' ],
     ],
     'variables' => [
-        'target_current' => [ 'type' => 'Integer', 'name' => 'Target Current', 'profile' => 'WARP2.ChargerCurrent', 'position' => '5', 'enableAction' => true ],
+        'charger_model' => [ 'type' => 'String', 'name' => 'Charger Modell', 'profile' => '', 'position' => '1', 'enableAction' => false ],
+        'firmware_version' => [ 'type' => 'String', 'name' => 'Firmware-Version', 'profile' => '', 'position' => '2', 'enableAction' => false ],
+        'config_version' => [ 'type' => 'String', 'name' => 'Konfiguration-Version', 'profile' => '', 'position' => '3', 'enableAction' => false ],
+    'config_type' => [ 'type' => 'String', 'name' => 'Konfiguration-Typ', 'profile' => '', 'position' => '4', 'enableAction' => false ],
+    'hardware_max_current' => [ 'type' => 'Integer', 'name' => 'Maximalstrom (Hardware)', 'profile' => 'WARP2.ChargerCurrent', 'position' => '5', 'enableAction' => false ],
+    'target_current' => [ 'type' => 'Integer', 'name' => 'Target Current', 'profile' => 'WARP2.ChargerCurrent', 'position' => '6', 'enableAction' => true ],
         'charger_state' => [ 'type' => 'Integer', 'name' => 'Charger Status', 'profile' => 'WARP2.ChargerState', 'position' => '10', 'enableAction' => false ],
         'iec61851_state' => [ 'type' => 'Integer', 'name' => 'Iec61851 State', 'profile' => 'WARP2.Iec61851State', 'position' => '100', 'enableAction' => false ],
         'contactor_state' => [ 'type' => 'Integer', 'name' => 'Contactor State', 'profile' => 'WARP2.ContactorState', 'position' => '102', 'enableAction' => false ],

@@ -22,6 +22,7 @@ class Warp2Gateway extends IPSModule
             $config = include __DIR__ . '/module.config.php';
             $mr->Register($config);
             $this->RegisterTimer('Update', 0, 'WARP2_Update($_IPS[\'TARGET\']);');
+            $this->SetBuffer('hardwareMaxCurrent', '0');
         } catch (Exception $e) {
             $this->LogMessage(__CLASS__, "Error creating Warp2 Gateway: " . $e->getMessage(), KL_ERROR);
         }
@@ -42,6 +43,7 @@ class Warp2Gateway extends IPSModule
         parent::ApplyChanges();
         try {
             $this->api->init($this->getConfig());
+            $this->fetchStaticChargerInfo();
             $enabled = $this->ReadPropertyBoolean('enabled');
             $updateInterval = $enabled ? $this->ReadPropertyInteger('updateInterval') : 0;
             $this->SetTimerInterval('Update', $updateInterval * 1000);
@@ -52,6 +54,90 @@ class Warp2Gateway extends IPSModule
             $this->SetStatus(104);
             $this->LogMessage("Error initializing Warp2 Gateway: " . $e->getMessage(), KL_ERROR);
         }
+    }
+
+    private function fetchStaticChargerInfo(): void
+    {
+        $config = $this->getConfig();
+
+        try {
+            $nameInfo = $this->api->apiRequest($config, 'info/name');
+            $nameData = json_decode($nameInfo, true);
+            if (is_array($nameData) && isset($nameData['display_type'])) {
+                $this->setVariableIfExists('charger_model', (string)$nameData['display_type']);
+            }
+        } catch (Exception $e) {
+            $this->SendDebug('Warp2Gateway', 'fetchStaticChargerInfo (name) failed: ' . $e->getMessage(), 0);
+        }
+
+        try {
+            $versionInfo = $this->api->apiRequest($config, 'info/version');
+            $versionData = json_decode($versionInfo, true);
+            if (is_array($versionData)) {
+                if (isset($versionData['firmware'])) {
+                    $this->setVariableIfExists('firmware_version', (string)$versionData['firmware']);
+                }
+                if (isset($versionData['config'])) {
+                    $this->setVariableIfExists('config_version', (string)$versionData['config']);
+                }
+                if (isset($versionData['config_type'])) {
+                    $this->setVariableIfExists('config_type', (string)$versionData['config_type']);
+                }
+            }
+        } catch (Exception $e) {
+            $this->SendDebug('Warp2Gateway', 'fetchStaticChargerInfo (version) failed: ' . $e->getMessage(), 0);
+        }
+
+        $hardwareUpdated = false;
+        try {
+            $hardwareInfo = $this->api->apiRequest($config, 'evse/hardware_configuration');
+            $hardwareData = json_decode($hardwareInfo, true);
+            if (is_array($hardwareData) && isset($hardwareData['jumper_configuration'])) {
+                $code = (int)$hardwareData['jumper_configuration'];
+                $hardwareMax = $this->mapJumperConfigToCurrent($code);
+                if ($hardwareMax === null) {
+                    $this->SendDebug('Warp2Gateway', sprintf('Jumper configuration %d not mapped to fixed current; using fallback.', $code), 0);
+                }
+                $this->updateHardwareMaxCurrent($hardwareMax);
+                $hardwareUpdated = true;
+            }
+        } catch (Exception $e) {
+            $this->SendDebug('Warp2Gateway', 'fetchStaticChargerInfo (hardware) failed: ' . $e->getMessage(), 0);
+        }
+
+        if (!$hardwareUpdated) {
+            $this->updateHardwareMaxCurrent(null);
+        }
+    }
+
+    private function setVariableIfExists(string $ident, $value): void
+    {
+        $varId = @$this->GetIDForIdent($ident);
+        if ($varId !== false) {
+            $this->SetValue($ident, $value);
+        }
+    }
+
+    private function updateHardwareMaxCurrent(?int $value): void
+    {
+        $current = $value ?? 0;
+        $this->SetBuffer('hardwareMaxCurrent', (string)$current);
+        $this->setVariableIfExists('hardware_max_current', $current);
+    }
+
+    private function mapJumperConfigToCurrent(int $code): ?int
+    {
+        $map = [
+            0 => 6000,
+            1 => 10000,
+            2 => 13000,
+            3 => 16000,
+            4 => 20000,
+            5 => 25000,
+            6 => 32000,
+        ];
+
+        return $map[$code] ?? null;
     }
 
     private function cleanupLegacyVariables(): void
@@ -109,7 +195,7 @@ class Warp2Gateway extends IPSModule
             switch ($ident) {
                 case 'target_current':
                     $payload = [ 'current' => (int)$value ];
-                    $this->api->apiRequest($this->getConfig(), 'evse/global_current', 'PUT', $payload);
+                    $this->api->apiRequest($this->getConfig(), 'evse/external_current', 'PUT', $payload);
                     break;
                 case 'update_now':
                     $this->Update();
@@ -144,5 +230,16 @@ class Warp2Gateway extends IPSModule
             $this->SendDebug('Warp2Gateway', sprintf('Meter endpoint %s failed: %s', $endpoint, $e->getMessage()), 0);
             return null;
         }
+    }
+
+    public function GetHardwareMaxCurrent(): int
+    {
+        $buffer = @$this->GetBuffer('hardwareMaxCurrent');
+        if ($buffer === '' || $buffer === null) {
+            $this->fetchStaticChargerInfo();
+            $buffer = @$this->GetBuffer('hardwareMaxCurrent');
+        }
+
+        return is_numeric($buffer) ? (int)$buffer : 0;
     }
 }
