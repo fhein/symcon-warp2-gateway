@@ -82,6 +82,11 @@ class Warp2API
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
         curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 2);
         curl_setopt($ch, CURLOPT_TIMEOUT_MS, 5000);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($ch, CURLOPT_MAXREDIRS, 3);
+        if (defined('CURL_REDIR_POST_ALL')) {
+            curl_setopt($ch, CURLOPT_POSTREDIR, CURL_REDIR_POST_ALL);
+        }
         
         if ($method == "PUT" && ! empty($payload)) {
             curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);

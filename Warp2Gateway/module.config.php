@@ -5,17 +5,22 @@ return [
         'host' => [ 'type' => 'String', 'default' => 'http://192.168.11.51' ],
         'user' => [ 'type' => 'String', 'default' => '' ],
         'password' => [ 'type' => 'String', 'default' => '' ],
-        'updateInterval' => [ 'type' => 'Integer', 'default' => '20' ],
         'enabled' => [ 'type' => 'Boolean', 'default' => 'true' ],
     ],
     'variables' => [
-        'charger_model' => [ 'type' => 'String', 'name' => 'Charger Modell', 'profile' => '', 'position' => '1', 'enableAction' => false ],
-        'firmware_version' => [ 'type' => 'String', 'name' => 'Firmware-Version', 'profile' => '', 'position' => '2', 'enableAction' => false ],
-        'config_version' => [ 'type' => 'String', 'name' => 'Konfiguration-Version', 'profile' => '', 'position' => '3', 'enableAction' => false ],
-    'config_type' => [ 'type' => 'String', 'name' => 'Konfiguration-Typ', 'profile' => '', 'position' => '4', 'enableAction' => false ],
-    'hardware_max_current' => [ 'type' => 'Integer', 'name' => 'Maximalstrom (Hardware)', 'profile' => 'WARP2.ChargerCurrent', 'position' => '5', 'enableAction' => false ],
-    'target_current' => [ 'type' => 'Integer', 'name' => 'Target Current', 'profile' => 'WARP2.ChargerCurrent', 'position' => '6', 'enableAction' => true ],
-        'charger_state' => [ 'type' => 'Integer', 'name' => 'Charger Status', 'profile' => 'WARP2.ChargerState', 'position' => '10', 'enableAction' => false ],
+        'charger_model' => [ 'type' => 'String', 'name' => 'Charger Modell', 'profile' => '', 'position' => '20', 'enableAction' => false ],
+        'firmware_version' => [ 'type' => 'String', 'name' => 'Firmware-Version', 'profile' => '', 'position' => '21', 'enableAction' => false ],
+        'config_version' => [ 'type' => 'String', 'name' => 'Konfiguration-Version', 'profile' => '', 'position' => '22', 'enableAction' => false ],
+    'config_type' => [ 'type' => 'String', 'name' => 'Konfiguration-Typ', 'profile' => '', 'position' => '23', 'enableAction' => false ],
+    'hardware_max_current' => [ 'type' => 'Integer', 'name' => 'Maximalstrom (Hardware)', 'profile' => 'WARP2.ChargerCurrent', 'position' => '24', 'enableAction' => false ],
+    // Legacy UI variable (keine Aktion mehr direkt auslösen)
+    'target_current' => [ 'type' => 'Integer', 'name' => 'Target Current', 'profile' => 'WARP2.ChargerCurrent', 'position' => '25', 'enableAction' => false ],
+    // Neue Steuerungs-Variablen (mxccmd_*)
+    'mxccmd_target_current' => [ 'type' => 'Integer', 'name' => 'Zielstrom (mA)', 'profile' => 'WARP2.ChargerCurrent', 'position' => '1', 'enableAction' => true ],
+    'mxccmd_apply_now' => [ 'type' => 'Boolean', 'name' => 'Anwenden', 'profile' => '~Switch', 'position' => '2', 'enableAction' => true ],
+    'mxccmd_refresh'   => [ 'type' => 'Boolean', 'name' => 'Aktualisieren', 'profile' => '~Switch', 'position' => '3', 'enableAction' => true ],
+    'mxccmd_reboot'    => [ 'type' => 'Boolean', 'name' => 'Neustart', 'profile' => '~Switch', 'position' => '4', 'enableAction' => true ],
+        'charger_state' => [ 'type' => 'Integer', 'name' => 'Charger Status', 'profile' => 'WARP2.ChargerState', 'position' => '11', 'enableAction' => false ],
         'iec61851_state' => [ 'type' => 'Integer', 'name' => 'Iec61851 State', 'profile' => 'WARP2.Iec61851State', 'position' => '100', 'enableAction' => false ],
         'contactor_state' => [ 'type' => 'Integer', 'name' => 'Contactor State', 'profile' => 'WARP2.ContactorState', 'position' => '102', 'enableAction' => false ],
         'contactor_error' => [ 'type' => 'Integer', 'name' => 'Contactor Error', 'profile' => 'WARP2.ContactorError', 'position' => '103', 'enableAction' => false ],
@@ -23,9 +28,11 @@ return [
         'error_state' => [ 'type' => 'Integer', 'name' => 'Error State', 'profile' => 'WARP2.ErrorState', 'position' => '105', 'enableAction' => false ],
         'lock_state' => [ 'type' => 'Integer', 'name' => 'Lock State', 'profile' => 'WARP2.LockState', 'position' => '106', 'enableAction' => false ],
         'dc_fault_current_state' => [ 'type' => 'Integer', 'name' => 'Dc Fault Current State', 'profile' => 'WARP2.DcFaultCurrentState', 'position' => '107', 'enableAction' => false ],
+        'charger_power' => [ 'type' => 'Float', 'name' => 'Charger Power', 'profile' => 'WARP2.Power', 'position' => '108', 'enableAction' => false ],
     ],
     'profiles' => [
         'WARP2.ChargerCurrent' => [ 'type' => 'Integer', 'icon' => 'Graph', 'suffix' => ' mA', 'digits' => '0' ],
+        'WARP2.Power' => [ 'type' => 'Float', 'icon' => 'Electricity', 'suffix' => ' W', 'digits' => '0' ],
         'WARP2.ChargerState' => [
             'type' => 'Integer', 'suffix' => '', 'icon' => 'Garage', 'minValue' => 0, 'maxValue' => 4, 'stepSize' => 1,
             'associations' => [

@@ -104,13 +104,35 @@ class WARP2ModuleRegistration {
     }                
 
     protected function isLastInstance() {
-        $property = $this->reflection->getProperty('InstanceID');
-        $property->setAccessible(true);
-        $instanceId = $property->getValue($this->module);
-        $moduleInfo = IPS_GetModule($instanceId);
-        $moduleId = $moduleInfo['ModuleID'];
-        $instances = IPS_GetInstanceListByModuleID($moduleId);
-        return count($instances) === 1;
+        try {
+            $property = $this->reflection->getProperty('InstanceID');
+            $property->setAccessible(true);
+            $instanceId = (int)$property->getValue($this->module);
+        } catch (Throwable $t) {
+            return false;
+        }
+
+        // Fetch instance to get its ModuleID (GUID)
+        try {
+            $instance = @IPS_GetInstance($instanceId);
+            if (!is_array($instance)) {
+                return false;
+            }
+            $moduleInfo = $instance['ModuleInfo'] ?? null;
+            $moduleId = is_array($moduleInfo) ? ($moduleInfo['ModuleID'] ?? '') : '';
+            if (!is_string($moduleId) || $moduleId === '') {
+                return false;
+            }
+        } catch (Throwable $t) {
+            return false;
+        }
+
+        try {
+            $instances = IPS_GetInstanceListByModuleID($moduleId);
+            return is_array($instances) && count($instances) === 1;
+        } catch (Throwable $t) {
+            return false;
+        }
     }
 
     public function RegisterProfiles($profiles, $updateExisting = true) {

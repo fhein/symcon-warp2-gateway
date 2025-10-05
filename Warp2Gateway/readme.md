@@ -1,12 +1,13 @@
 # WARP2 Gateway (IP-Symcon)
 
-This IP-Symcon gateway integrates a Tinkerforge WARP2 wallbox (EVSE) via its HTTP API. It periodically polls the charger state and exposes it as IP-Symcon variables with suitable profiles. The gateway can also forward arbitrary API requests for use by child modules.
+This IP-Symcon gateway integrates a Tinkerforge WARP2 wallbox (EVSE) via its HTTP API. It periodically polls the charger state and exposes it as IP-Symcon variables with suitable profiles. Control is variables-only: you write to the exposed command variables and the gateway applies the settings to the wallbox. The gateway can also forward arbitrary API requests for use by child modules.
 
 ## What it does
 - Connects to a WARP2 device (host/IP or URL) with optional Basic/Digest authentication.
 - Polls the REST endpoint `evse/state` at a configurable interval.
 - Updates a set of read-only status variables (charger state, IEC 61851 state, contactor state/error, allowed charging current, lock state, error states, etc.).
 - Provides a gateway endpoint for child modules to call other WARP2 API endpoints (GET/PUT) through IP-Symcon’s data flow.
+\- Exposes writeable command variables for variable-based control (see below).
 
 ## Requirements
 - A reachable WARP2 wallbox (local network or reachable URL)
@@ -43,6 +44,16 @@ The following variables are registered and updated when polling `evse/state`. Th
 
 Note: The gateway maps JSON keys from `evse/state` directly to variables with the same ident. Only keys that exist as variables are updated.
 
+## Command variables (write to control)
+These variables are meant to be written by automation or other modules (e.g. SolarCharger):
+
+- mxccmd_target_current (Integer, mA, profile `WARP2.ChargerCurrent`): Desired charging current (mA)
+- mxccmd_apply_now (Boolean, `~Switch`): Apply the current value immediately
+- mxccmd_refresh (Boolean, `~Switch`): Refresh state variables from the device
+- mxccmd_reboot (Boolean, `~Switch`): Reboot the charger
+
+For legacy compatibility, `target_current` (Integer, mA) is mirrored when applying.
+
 ## Manual refresh from a script
 You can trigger an immediate poll from a script using the auto-generated wrapper (module prefix `WARP2`):
 
@@ -77,6 +88,8 @@ Example payload sent from a child to the parent (conceptual):
 - No variables update:
   - Make sure “Gateway enabled” is checked and the update interval is > 0.
   - Confirm the device returns valid JSON for `evse/state`.
+\- Commands not taking effect:
+  - Ensure `mxccmd_target_current` is set and `mxccmd_apply_now` toggled to true. Check the hardware max current variable; the gateway caps the applied current accordingly.
 
 ## License
 See the repository for license details.
